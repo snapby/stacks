@@ -1,0 +1,23 @@
+version: "3"
+services:
+  inlets:
+    image: kumekay/inlets:latest
+    restart: unless-stopped
+    networks:
+      - proxy
+    expose:
+      - "9000"
+    entrypoint: ["inlets"]
+    command:
+      - "server"
+      - "--port=9000"
+      - "--token=${INLETS_TOKEN}"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.inlets-${INLETS_HOSTNAME}.entrypoints=websecure"
+      - "traefik.http.routers.inlets-${INLETS_HOSTNAME}.rule=Host(`${INLETS_HOSTNAME}.${INLETS_DOMAIN}`)"
+      - "traefik.http.services.inlets-${INLETS_HOSTNAME}.loadbalancer.server.port=9000"
+networks:
+  proxy:
+    external: true
