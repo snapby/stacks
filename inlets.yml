@@ -1,7 +1,7 @@
 version: "3"
 services:
   inlets:
-    image: inlets/inlets:3.0.0
+    image: inlets/inlets:2.7.10-14-gab32cdc
     restart: unless-stopped
     networks:
       - proxy
