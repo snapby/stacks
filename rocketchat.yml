@@ -2,6 +2,7 @@ version: "3"
 services:
   rocketchat:
     image: rocketchat/rocket.chat:4.1.2
+    container_name: ${TENANT_ID}_rocketchat_${DEPLOY_ID}_rocketchat
     restart: unless-stopped
     networks:
       - proxy
@@ -60,6 +61,7 @@ services:
 
   rocketchat-db:
     image: mongo:4.4.10
+    container_name: ${TENANT_ID}_rocketchat_${DEPLOY_ID}_rocketchat-db
     restart: unless-stopped
     volumes:
       - rocketchat_db:/data/db
@@ -79,7 +81,7 @@ services:
   # it will run the command and remove himself (it will not stay running)
   rocketchat-db-init-replica:
     image: mongo:4.4.10
-    # container_name: ${TENANT_ID}_${STACK_TYPE}_${DEPLOY_ID}_rocketchat-db-init-replica
+    container_name: ${TENANT_ID}_rocketchat_${DEPLOY_ID}_rocketchat-db-init-replica
     depends_on:
       - rocketchat-db
     command: >
@@ -100,7 +102,7 @@ services:
 
   rocketchat-db-backup:
     image: tiredofit/db-backup
-    # container_name: ${TENANT_ID}_${STACK_TYPE}_${DEPLOY_ID}_rocketchat-db-backup
+    container_name: ${TENANT_ID}_rocketchat_${DEPLOY_ID}_rocketchat-db-backup
     links:
       - rocketchat-db
     volumes:
