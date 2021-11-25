@@ -116,6 +116,7 @@ services:
       - MD5=TRUE
       - COMPRESSION=GZ
       - SPLIT_DB=FALSE
+      - BACKUP_LOCATION=S3
       - S3_BUCKET=backup-rocketchat-portainer
       - S3_HOST=s3.amazonaws.com
       - S3_KEY_ID=AKIAY4SPCBYB3ZCHOAEQ
