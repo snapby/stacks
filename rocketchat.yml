@@ -116,6 +116,13 @@ services:
       - MD5=TRUE
       - COMPRESSION=GZ
       - SPLIT_DB=FALSE
+      - S3_BUCKET=backup-rocketchat-portainer
+      - S3_HOST=s3.amazonaws.com
+      - S3_KEY_ID=AKIAY4SPCBYB3ZCHOAEQ
+      - S3_KEY_SECRET=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
+      - S3_PATH=${TENANT_ID}_rocketchat_${DEPLOY_ID}_db-backup
+      - S3_PROTOCOL=https
+      - S3_URI_STYLE=VIRTUALHOST
     restart: unless-stopped
     labels:
       - "traefik.enable=false"
