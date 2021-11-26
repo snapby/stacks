@@ -21,7 +21,12 @@ services:
       - ADMIN_USERNAME=${ADMIN_USERNAME}
       - ADMIN_PASS=${ADMIN_PASS}
       - ADMIN_EMAIL=${ADMIN_EMAIL}
-      - Accounts_UseDNSDomainCheck='false'
+      - Accounts_UseDNSDomainCheck=false
+      - Language=pt-br
+      - Country=brazil
+      - Allow_Marketing_Emails=0
+      - Site_Name=Superchat
+      - Server_Type=publicCommunity
     command: >
       bash -c
         "for i in `seq 1 30`; do
@@ -36,6 +41,10 @@ services:
       - "traefik.http.routers.rocketchat-${TENANT_ID}_${DEPLOY_ID}.entrypoints=websecure"
       - "traefik.http.routers.rocketchat-${TENANT_ID}_${DEPLOY_ID}.rule=Host(`${DEPLOY_ID}.${DEPLOY_DOMAIN}`)"
       - "traefik.http.services.rocketchat-${TENANT_ID}_${DEPLOY_ID}.loadbalancer.server.port=3000"
+      - "traefik.http.services.rocketchat-${TENANT_ID}_${DEPLOY_ID}.loadbalancer.passhostheader=true"
+      - "traefik.http.routers.rocketchat-${TENANT_ID}_${DEPLOY_ID}.middlewares=compresstraefik"
+      - "traefik.http.middlewares.compresstraefik.compress=true"
+
     healthcheck:
       test: >
         /usr/local/bin/node -e ' const http = require("http"); const options = {
