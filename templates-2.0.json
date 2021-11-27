@@ -1,0 +1,90 @@
+{
+	"version": "2",
+	"templates": [
+		{
+			"type": 3,
+			"title": "Snapby - Inlets",
+			"description": "Tunnel your private services to a remote network",
+			"note": "For Portainer with docker host mode",
+			"categories": [
+				"Tools"
+			],
+			"platform": "linux",
+			"logo": "https://docs.inlets.dev/images/logo.svg",
+			"network": "proxy",
+			"repository": {
+				"url": "https://github.com/snapby/stacks",
+				"stackfile": "inlets.yml"
+			},
+			"env": [
+				{
+					"name": "INLETS_DOMAIN",
+					"label": "Domain",
+					"description": "Base domain for the hostname of this instance. Like: lt.superchat.com.br"
+				},
+				{
+					"name": "INLETS_HOSTNAME",
+					"label": "Hostname",
+					"description": "Hostname for this instance. Note: Is not the full domain name, only the host part, like: dev001"
+				},
+				{
+					"name": "INLETS_TOKEN",
+					"label": "Token",
+					"description": "Auth token for this instance"
+				}
+			]
+		},
+		{
+			"type": 3,
+			"title": "Snapby - Rocketchat",
+			"description": "The communications platform that puts data protection first.",
+			"note": "For Portainer with docker host mode",
+			"categories": [
+				"Chat"
+			],
+			"platform": "linux",
+			"logo": "https://i.imgur.com/mTR06gP.png",
+			"network": "proxy",
+			"repository": {
+				"url": "https://github.com/snapby/stacks",
+				"stackfile": "rocketchat.yml"
+			},
+			"env": [
+				{
+					"name": "DEPLOY_DOMAIN",
+					"label": "Domain",
+					"description": "Base domain for the hostname of this instance. Like: tenant_slug.superchat.com.br",
+					"default": "tenant_slug.ls.superchat.com.br"
+				},
+				{
+					"name": "DEPLOY_ID",
+					"label": "Hostname",
+					"description": "Hostname for this instance. Note: Is not the full domain name, only the host part, like: rc",
+					"default": "rc"
+				},
+				{
+					"name": "TENANT_ID",
+					"label": "Tenant ID",
+					"description": "Client (Tenant) unique ID, like: ckt9nhgjk111789l4jxw8hpwz"
+				},
+				{
+					"name": "ADMIN_USERNAME",
+					"label": "Admin Username",
+					"description": "Admin login username, like: admin",
+					"default": "superchat"
+				},
+				{
+					"name": "ADMIN_PASS",
+					"label": "Admin Password",
+					"description": "Admin password"
+				},
+				{
+					"name": "ADMIN_EMAIL",
+					"label": "Admin Email",
+					"description": "Admin email",
+					"default": "tenant_slug@superchat.com.br"
+				}
+			]
+		}
+	]
+}
