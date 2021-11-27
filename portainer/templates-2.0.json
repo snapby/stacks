@@ -13,7 +13,7 @@
 			"logo": "https://inlets.dev/images/logo.svg",
 			"network": "proxy",
 			"repository": {
-				"url": "https://github.com/snapby/stacks",
+				"url": "https://github.com/snapby/stacks/portainer/stacks/v2",
 				"stackfile": "inlets.yml"
 			},
 			"env": [
@@ -46,7 +46,7 @@
 			"logo": "https://i.imgur.com/mTR06gP.png",
 			"network": "proxy",
 			"repository": {
-				"url": "https://github.com/snapby/stacks",
+				"url": "https://github.com/snapby/stacks/portainer/stacks/v2",
 				"stackfile": "rocketchat.yml"
 			},
 			"env": [
