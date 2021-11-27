@@ -10,7 +10,7 @@
 				"Tools"
 			],
 			"platform": "linux",
-			"logo": "https://docs.inlets.dev/images/logo.svg",
+			"logo": "https://inlets.dev/images/logo.svg",
 			"network": "proxy",
 			"repository": {
 				"url": "https://github.com/snapby/stacks",
