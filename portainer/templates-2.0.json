@@ -35,8 +35,8 @@
 			]
 		},
 		{
-			"type": 3,
-			"title": "Snapby - Rocketchat",
+			"type": 2,
+			"title": "Superchat - Rocketchat",
 			"description": "The communications platform that puts data protection first.",
 			"note": "For Portainer with docker host mode",
 			"categories": [
@@ -46,8 +46,8 @@
 			"logo": "https://i.imgur.com/mTR06gP.png",
 			"network": "proxy",
 			"repository": {
-				"url": "https://github.com/snapby/stacks/portainer/stacks/v2",
-				"stackfile": "rocketchat.yml"
+				"url": "https://github.com/snapby/stacks/portainer/swarms/v2/rocketchat",
+				"stackfile": "docker-stack.yml"
 			},
 			"env": [
 				{

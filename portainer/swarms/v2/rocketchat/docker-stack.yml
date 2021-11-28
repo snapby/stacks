@@ -1,0 +1,185 @@
+version: "3"
+services:
+  rocketchat:
+    image: rocketchat/rocket.chat:4.1.2
+    container_name: ${TENANT_ID}_rocketchat_${DEPLOY_ID}_rocketchat
+    restart: unless-stopped
+    networks:
+      - proxy
+      - deploy
+    expose:
+      - "3000"
+    volumes:
+      - rocketchat:/app/uploads
+    deploy:
+      replicas: 1
+    environment:
+      - PORT=3000
+      - ROOT_URL=https://${DEPLOY_ID}.${DEPLOY_DOMAIN}
+      # - MONGO_URL=${MONGO_URL}
+      - MONGO_URL=mongodb://rocketchat-db:27017/rocketchat
+      # - MONGO_OPLOG_URL=${MONGO_OPLOG_URL}
+      - MONGO_OPLOG_URL=mongodb://rocketchat-db:27017/local
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASS=${ADMIN_PASS}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - Accounts_UseDNSDomainCheck=false
+      - Language=pt-br
+      - Country=brazil
+      - Allow_Marketing_Emails=0
+      - Site_Name=Superchat
+      - Server_Type=publicCommunity
+    command: >
+      bash -c
+        "for i in `seq 1 30`; do
+          node main.js &&
+          s=$$? && break || s=$$?;
+          echo \"Tried $$i times. Waiting 5 secs...\";
+          sleep 5;
+        done; (exit $$s)"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.rocketchat-${TENANT_ID}_${DEPLOY_ID}.entrypoints=websecure"
+      - "traefik.http.routers.rocketchat-${TENANT_ID}_${DEPLOY_ID}.rule=Host(`${DEPLOY_ID}.${DEPLOY_DOMAIN}`)"
+      - "traefik.http.services.rocketchat-${TENANT_ID}_${DEPLOY_ID}.loadbalancer.server.port=3000"
+      - "traefik.http.services.rocketchat-${TENANT_ID}_${DEPLOY_ID}.loadbalancer.passhostheader=true"
+      - "traefik.http.routers.rocketchat-${TENANT_ID}_${DEPLOY_ID}.middlewares=compresstraefik"
+      - "traefik.http.middlewares.compresstraefik.compress=true"
+
+    healthcheck:
+      test: >
+        /usr/local/bin/node -e ' const http = require("http"); const options = {
+          host: "localhost",
+          port: 3000,
+          path: "/api/info",
+          timeout: 2000
+        }; const healthCheck = http.request(options, (res) => {
+          console.log(`HEALTHCHECK STATUS: $${res.statusCode}`);
+          if (res.statusCode == 200) {
+            process.exit(0);
+          } else {
+            process.exit(1);
+          }
+        }); healthCheck.on("error", function (err) {
+          console.error("ERROR");
+          process.exit(1);
+        }); healthCheck.end();'
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+  rocketchat-db:
+    image: mongo:4.4.10
+    container_name: ${TENANT_ID}_rocketchat_${DEPLOY_ID}_rocketchat-db
+    restart: unless-stopped
+    volumes:
+      - rocketchat_db:/data/db
+      - rocketchat_db_dump:/dump
+    command: mongod --replSet rs0
+    deploy:
+      replicas: 1
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - deploy
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo rocketchat-db:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+  # this container's job is just run the command to initialize the replica set.
+  # it will run the command and remove himself (it will not stay running)
+  rocketchat-db-init-replica:
+    image: mongo:4.4.10
+    container_name: ${TENANT_ID}_rocketchat_${DEPLOY_ID}_rocketchat-db-init-replica
+    depends_on:
+      - rocketchat-db
+    command: >
+      bash -c 
+        "for i in `seq 1 30`; do
+          mongo rocketchat-db/rocketchat --eval \"
+            rs.initiate({
+              _id: 'rs0', 
+              members: [ { _id: 0, host: 'rocketchat-db:27017' } ]})\" && 
+            s=$$? && break || s=$$?; 
+            echo \"Tried $$i times. Waiting 5 secs...\"; 
+            sleep 5; 
+        done; (exit $$s)"
+    deploy:
+      replicas: 1
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - deploy
+
+  rocketchat-db-backup:
+    image: tiredofit/db-backup
+    container_name: ${TENANT_ID}_rocketchat_${DEPLOY_ID}_rocketchat-db-backup
+    links:
+      - rocketchat-db
+    volumes:
+      - rocketchat_db_backup:/backup
+    deploy:
+      replicas: 1
+    environment:
+      - DB_TYPE=mongo
+      - DB_HOST=rocketchat-db
+      - DB_DUMP_FREQ=1440
+      - DB_DUMP_BEGIN=0130
+      - DB_CLEANUP_TIME=8640
+      - MD5=TRUE
+      - COMPRESSION=GZ
+      - SPLIT_DB=FALSE
+      - BACKUP_LOCATION=S3
+      - S3_BUCKET=backup-rocketchat-portainer
+      - S3_HOST=s3.amazonaws.com
+      - S3_KEY_ID=AKIAY4SPCBYB3ZCHOAEQ
+      - S3_KEY_SECRET=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
+      - S3_PATH=${TENANT_ID}_rocketchat_${DEPLOY_ID}_db-backup
+      - S3_PROTOCOL=https
+      - S3_URI_STYLE=VIRTUALHOST
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - deploy
+    healthcheck:
+      test: (/bin/s6-svstat /var/run/s6/services/04-scheduling && /bin/s6-svstat /var/run/s6/services/10-db-backup)
+      interval: 1m
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+networks:
+  proxy:
+    external: true
+  deploy:
+    name: ${TENANT_ID}_rocketchat_${DEPLOY_ID}
+
+volumes:
+  rocketchat:
+    # external: true
+    name: ${TENANT_ID}_rocketchat_${DEPLOY_ID}_rocketchat
+    labels:
+      - "com.${TENANT_ID}.rocketchat.${DEPLOY_ID}.description=Rocketchat data"
+      - "com.${TENANT_ID}.rocketchat.${DEPLOY_ID}.department=IT/Ops"
+  rocketchat_db:
+    name: ${TENANT_ID}_rocketchat_${DEPLOY_ID}_rocketchat_db
+    labels:
+      - "com.${TENANT_ID}.rocketchat.${DEPLOY_ID}.description=Rocketchat DB"
+      - "com.${TENANT_ID}.rocketchat.${DEPLOY_ID}.department=IT/Ops"
+  rocketchat_db_dump:
+    name: ${TENANT_ID}_rocketchat_${DEPLOY_ID}_rocketchat_db_dump
+    labels:
+      - "com.${TENANT_ID}.rocketchat.${DEPLOY_ID}.description=Rocketchat DB dump"
+      - "com.${TENANT_ID}.rocketchat.${DEPLOY_ID}.department=IT/Ops"
+  rocketchat_db_backup:
+    name: ${TENANT_ID}_rocketchat_${DEPLOY_ID}_rocketchat_db_backup
+    labels:
+      - "com.${TENANT_ID}.rocketchat.${DEPLOY_ID}.description=Rocketchat DB
+        backup"
+      - "com.${TENANT_ID}.rocketchat.${DEPLOY_ID}.department=IT/Ops"
