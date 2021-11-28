@@ -74,6 +74,7 @@ services:
     restart: unless-stopped
     volumes:
       - rocketchat_db:/data/db
+      - rocketchat_db_dump:/dump
     command: mongod --replSet rs0
     labels:
       - "traefik.enable=false"
@@ -162,6 +163,11 @@ volumes:
     name: ${TENANT_ID}_rocketchat_${DEPLOY_ID}_rocketchat_db
     labels:
       - "com.${TENANT_ID}.rocketchat.${DEPLOY_ID}.description=Rocketchat DB"
+      - "com.${TENANT_ID}.rocketchat.${DEPLOY_ID}.department=IT/Ops"
+  rocketchat_db_dump:
+    name: ${TENANT_ID}_rocketchat_${DEPLOY_ID}_rocketchat_db_dump
+    labels:
+      - "com.${TENANT_ID}.rocketchat.${DEPLOY_ID}.description=Rocketchat DB dump"
       - "com.${TENANT_ID}.rocketchat.${DEPLOY_ID}.department=IT/Ops"
   rocketchat_db_backup:
     name: ${TENANT_ID}_rocketchat_${DEPLOY_ID}_rocketchat_db_backup
